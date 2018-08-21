@@ -185,6 +185,7 @@ export default class Editor {
       let linkUrl = linkInfo.url;
       const linkText = linkInfo.text;
       const isNewWindow = linkInfo.isNewWindow;
+      const isRelativeUrl = linkInfo.isRelativeUrl;
       let rng = linkInfo.range || this.createRange();
       const isTextChanged = rng.toString() !== linkText;
 
@@ -197,8 +198,10 @@ export default class Editor {
         linkUrl = this.options.onCreateLink(linkUrl);
       } else {
         // if url doesn't match an URL schema, set http:// as default
-        linkUrl = /^[A-Za-z][A-Za-z0-9+-.]*\:[\/\/]?/.test(linkUrl)
-          ? linkUrl : 'http://' + linkUrl;
+        if (!isRelativeUrl) {
+          linkUrl = /^[A-Za-z][A-Za-z0-9+-.]*\:[\/\/]?/.test(linkUrl)
+            ? linkUrl : 'http://' + linkUrl;
+        }
       }
 
       let anchors = [];
@@ -726,9 +729,12 @@ export default class Editor {
       url: $anchor.length ? $anchor.attr('href') : ''
     };
 
-    // Define isNewWindow when anchor exists.
+    // When anchor exists,
     if ($anchor.length) {
+      // Set isNewWindow by checking its target.
       linkInfo.isNewWindow = $anchor.attr('target') === '_blank';
+      // And also whether the link is relative or not.
+      linkInfo.isRelativeUrl = !/^[A-Za-z][A-Za-z0-9+-.]*\:[\/\/]?/.test($anchor.attr('href'));
     }
 
     return linkInfo;

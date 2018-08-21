@@ -33,7 +33,12 @@ export default class LinkDialog {
           text: this.lang.link.openInNewWindow,
           checked: true
         }).render()).html()
-        : ''
+        : '',
+      $('<div/>').append(this.ui.checkbox({
+        id: 'sn-checkbox-is-relative-url',
+        text: this.lang.link.isRelativeUrl,
+        checked: false
+      }).render()).html()
     ].join('');
 
     const buttonClass = 'btn btn-primary note-btn note-btn-primary note-link-btn';
@@ -80,7 +85,8 @@ export default class LinkDialog {
       const $linkText = this.$dialog.find('.note-link-text');
       const $linkUrl = this.$dialog.find('.note-link-url');
       const $linkBtn = this.$dialog.find('.note-link-btn');
-      const $openInNewWindow = this.$dialog.find('input[type=checkbox]');
+      const $openInNewWindow = this.$dialog.find('#sn-checkbox-open-in-new-window');
+      const $isRelativeUrl = this.$dialog.find('#sn-checkbox-is-relative-url');
 
       this.ui.onDialogShown(this.$dialog, () => {
         this.context.triggerEvent('dialog.shown');
@@ -124,10 +130,15 @@ export default class LinkDialog {
         this.bindEnterKey($linkUrl, $linkBtn);
         this.bindEnterKey($linkText, $linkBtn);
 
-        const isChecked = linkInfo.isNewWindow !== undefined
+        const isNewWindowChecked = linkInfo.isNewWindow !== undefined
           ? linkInfo.isNewWindow : this.context.options.linkTargetBlank;
 
-        $openInNewWindow.prop('checked', isChecked);
+        $openInNewWindow.prop('checked', isNewWindowChecked);
+
+        const isRelativeUrl = linkInfo.isRelativeUrl !== undefined
+          ? linkInfo.isRelativeUrl : this.context.options.linkRelativeUrl;
+
+        $isRelativeUrl.prop('checked', isRelativeUrl);
 
         $linkBtn.one('click', (event) => {
           event.preventDefault();
@@ -136,7 +147,8 @@ export default class LinkDialog {
             range: linkInfo.range,
             url: $linkUrl.val(),
             text: $linkText.val(),
-            isNewWindow: $openInNewWindow.is(':checked')
+            isNewWindow: $openInNewWindow.is(':checked'),
+            isRelativeUrl: $isRelativeUrl.is(':checked')
           });
           this.ui.hideDialog(this.$dialog);
         });
